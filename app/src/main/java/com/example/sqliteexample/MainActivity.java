@@ -9,17 +9,20 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -47,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 task t=new task(getApplicationContext());
-
+                t.execute();
             }
         });
 
@@ -95,16 +98,21 @@ public class MainActivity extends AppCompatActivity {
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 InputStream stream=connection.getInputStream();
                 BufferedReader reader=new BufferedReader(new InputStreamReader(stream));
+
                 String line=reader.readLine();
                 String data="";
+
                 while(line!=null)
                 {
                     data+=line;
                     line=reader.readLine();
                 }
+
                 System.out.println(data);
-                JSONObject object=new JSONObject(data);
-                int versioncode=object.getInt("versionCode");
+                JSONArray array=new JSONArray(data);
+                JSONObject main=array.getJSONObject(0);
+                JSONObject object=main.getJSONObject("apkData");
+                long versioncode=object.getLong("versionCode");
 
                 PackageInfo info=context.getPackageManager().getPackageInfo(getPackageName(),0);
                 long appversioncode=-1;
@@ -118,9 +126,24 @@ public class MainActivity extends AppCompatActivity {
 
                 System.out.println("Current version:" +
                         appversioncode+"\nserverappversion:"+versioncode);
-                Toast.makeText(MainActivity.this, "Current version:" +
-                        appversioncode+"\nserverappversion:"+versioncode, Toast.LENGTH_SHORT).show();
 
+                if(appversioncode<=versioncode)
+                {
+                    url=new URL("https://github.com/DarshanAjudiya/sqliteexample/blob/master/app/release/app-release.apk?raw=true");
+                    connection= (HttpURLConnection) url.openConnection();
+                    File dest=new File( Environment.getDownloadCacheDirectory(),"app-release.apk");
+                    FileOutputStream outputStream=new FileOutputStream(dest);
+                    stream= connection.getInputStream();
+                    byte[] buffer=new byte[1024];
+                    int length=0;
+                    while((length=stream.read(buffer))!=-1) {
+                        outputStream.write(buffer, 0, length);
+                    }
+
+                    outputStream.close();
+
+
+                }
             } catch (IOException | JSONException | PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
             }
