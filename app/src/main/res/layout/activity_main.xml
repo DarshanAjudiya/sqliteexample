@@ -43,5 +43,9 @@
         android:id="@+id/data"
         android:textSize="20sp"/>
     </ScrollView>
-
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/checkupdate"
+        android:text="check for update"/>
 </LinearLayout>
