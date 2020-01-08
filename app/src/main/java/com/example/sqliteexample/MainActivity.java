@@ -7,11 +7,13 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import org.json.JSONException;
@@ -44,40 +46,8 @@ public class MainActivity extends AppCompatActivity {
         checkupdate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    URL url=new URL("https://github.com/DarshanAjudiya/sqliteexample/raw/master/app/release/output.json");
+                task t=new task(getApplicationContext());
 
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    InputStream stream=connection.getInputStream();
-                    BufferedReader reader=new BufferedReader(new InputStreamReader(stream));
-                    String line=reader.readLine();
-                    String data="";
-                    while(line!=null)
-                    {
-                        data+=line;
-                        line=reader.readLine();
-                    }
-                    System.out.println(data);
-                    JSONObject object=new JSONObject(data);
-                    int versioncode=object.getInt("versionCode");
-
-                    PackageInfo info=getApplicationContext().getPackageManager().getPackageInfo(getPackageName(),0);
-                    long appversioncode=-1;
-
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-                        appversioncode = info.getLongVersionCode();
-                    }
-                    else {
-                        appversioncode = info.versionCode;
-                    }
-
-                    System.out.println("Current version:" +
-                            appversioncode+"\nserverappversion:"+versioncode);
-
-
-                } catch (IOException | JSONException | PackageManager.NameNotFoundException e) {
-                    e.printStackTrace();
-                }
             }
         });
 
@@ -108,5 +78,53 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public class task extends AsyncTask<Void,Void,Void>
+    {
+        Context context;
+    public task(Context context)
+    {
+        this.context=context;
+    }
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try {
+                URL url=new URL("https://github.com/DarshanAjudiya/sqliteexample/raw/master/app/release/output.json");
+
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                InputStream stream=connection.getInputStream();
+                BufferedReader reader=new BufferedReader(new InputStreamReader(stream));
+                String line=reader.readLine();
+                String data="";
+                while(line!=null)
+                {
+                    data+=line;
+                    line=reader.readLine();
+                }
+                System.out.println(data);
+                JSONObject object=new JSONObject(data);
+                int versioncode=object.getInt("versionCode");
+
+                PackageInfo info=context.getPackageManager().getPackageInfo(getPackageName(),0);
+                long appversioncode=-1;
+
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                    appversioncode = info.getLongVersionCode();
+                }
+                else {
+                    appversioncode = info.versionCode;
+                }
+
+                System.out.println("Current version:" +
+                        appversioncode+"\nserverappversion:"+versioncode);
+                Toast.makeText(MainActivity.this, "Current version:" +
+                        appversioncode+"\nserverappversion:"+versioncode, Toast.LENGTH_SHORT).show();
+
+            } catch (IOException | JSONException | PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
 }
