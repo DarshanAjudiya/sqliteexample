@@ -127,12 +127,14 @@ public class MainActivity extends AppCompatActivity {
                 System.out.println("Current version:" +
                         appversioncode+"\nserverappversion:"+versioncode);
 
-                if(appversioncode<=versioncode)
+                if(appversioncode<versioncode)
                 {
                     url=new URL("https://github.com/DarshanAjudiya/sqliteexample/blob/master/app/release/app-release.apk?raw=true");
                     connection= (HttpURLConnection) url.openConnection();
-                    File dest=new File( Environment.getDownloadCacheDirectory(),"app-release.apk");
-                    FileOutputStream outputStream=new FileOutputStream(dest);
+                    File dest=new File(Environment.getExternalStoragePublicDirectory( Environment.DIRECTORY_DOWNLOADS),"app-release.apk");
+                    System.out.println(dest.getAbsolutePath());
+
+                    FileOutputStream outputStream=new FileOutputStream(dest,false);
                     stream= connection.getInputStream();
                     byte[] buffer=new byte[1024];
                     int length=0;
