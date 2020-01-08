@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     System.out.println(data);
                     JSONObject object=new JSONObject(data);
-                    int versioncode=object.getInt("verionCode");
+                    int versioncode=object.getInt("versionCode");
 
                     PackageInfo info=getApplicationContext().getPackageManager().getPackageInfo(getPackageName(),0);
                     long appversioncode=-1;
