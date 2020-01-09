@@ -165,13 +165,17 @@ public class MainActivity extends AppCompatActivity {
                     Uri fileuri;
                     if(Build.VERSION.SDK_INT>Build.VERSION_CODES.M)
                     {
-                        fileuri=getfileuri(getApplicationContext(),dest);
+                        fileuri=getURI(getApplicationContext(),dest);
+                        System.out.println(fileuri.toString());
                     }
                     else
+
                         fileuri=Uri.fromFile(dest);
                     Intent intent=new Intent(Intent.ACTION_VIEW);
-                    intent.setDataAndType(Uri.fromFile(dest),"application/vnd.android.package-archive");
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.setDataAndType(fileuri,"application/vnd.android.package-archive");
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK );
+                    intent.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE,true);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     startActivity(intent);
                 }
             } catch (IOException | JSONException | PackageManager.NameNotFoundException e) {
@@ -180,9 +184,8 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
-        private Uri getfileuri(Context context,File dest) {
-            return FileProvider.getUriForFile(context,
-                    context.getApplicationContext().getPackageName() + ".HelperClasses.GenericFileProvider", dest);
+        private Uri getURI(Context context,File dest) {
+            return FileProvider.getUriForFile(getBaseContext(),getApplicationContext().getPackageName() + ".provider", dest);
         }
     }
 
