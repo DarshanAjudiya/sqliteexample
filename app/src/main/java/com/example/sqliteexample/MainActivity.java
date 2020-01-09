@@ -3,6 +3,7 @@ package com.example.sqliteexample;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.content.Context;
@@ -14,6 +15,7 @@ import android.database.Cursor;
 import android.media.audiofx.EnvironmentalReverb;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
@@ -42,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     Button add,show,checkupdate;
     TextView dta;
     DatabaseHandler handler=new DatabaseHandler(this);
-    public String[] PERMISSIONS={Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    public String[] PERMISSIONS={Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.REQUEST_COMPANION_RUN_IN_BACKGROUND};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -129,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                 PackageInfo info=context.getPackageManager().getPackageInfo(getPackageName(),0);
                 long appversioncode=-1;
 
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     appversioncode = info.getLongVersionCode();
                 }
                 else {
@@ -144,12 +146,12 @@ public class MainActivity extends AppCompatActivity {
                 {
                     url=new URL("https://github.com/DarshanAjudiya/sqliteexample/blob/master/app/release/app-release.apk?raw=true");
                     connection= (HttpURLConnection) url.openConnection();
-                    //File dest=new File(Environment.getExternalStoragePublicDirectory( Environment.DIRECTORY_DOWNLOADS),"app-release.apk");
+                    File dest=new File(Environment.getExternalStoragePublicDirectory( Environment.DIRECTORY_DOWNLOADS),"app-release.apk");
 
 
-                    File dest=new File(getBaseContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),"app-release.apk");
+                    //File dest=new File(getBaseContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),"app-release.apk");
                   //  File dest=new File(getApplicationContext().getFilesDir(),"app-release.apk");
-                    System.out.println(Environment.getRootDirectory().canWrite());
+                   // System.out.println(Environment.getRootDirectory().canWrite());
                     System.out.println(dest.getAbsolutePath());
 
                     FileOutputStream outputStream=new FileOutputStream(dest,false);
@@ -160,7 +162,13 @@ public class MainActivity extends AppCompatActivity {
                         outputStream.write(buffer, 0, length);
                     }
                     outputStream.close();
-
+                    Uri fileuri;
+                    if(Build.VERSION.SDK_INT>Build.VERSION_CODES.M)
+                    {
+                        fileuri=getfileuri(getApplicationContext(),dest);
+                    }
+                    else
+                        fileuri=Uri.fromFile(dest);
                     Intent intent=new Intent(Intent.ACTION_VIEW);
                     intent.setDataAndType(Uri.fromFile(dest),"application/vnd.android.package-archive");
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -170,6 +178,11 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             return null;
+        }
+
+        private Uri getfileuri(Context context,File dest) {
+            return FileProvider.getUriForFile(context,
+                    context.getApplicationContext().getPackageName() + ".HelperClasses.GenericFileProvider", dest);
         }
     }
 
