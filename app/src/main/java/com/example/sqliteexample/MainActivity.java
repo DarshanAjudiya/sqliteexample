@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     Button add,show,checkupdate;
     TextView dta;
     DatabaseHandler handler=new DatabaseHandler(this);
-    public String[] PERMISSIONS={Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.REQUEST_COMPANION_RUN_IN_BACKGROUND};
+    public String[] PERMISSIONS={Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.REQUEST_COMPANION_RUN_IN_BACKGROUND,Manifest.permission.INSTALL_PACKAGES};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -151,37 +151,90 @@ public class MainActivity extends AppCompatActivity {
 
                     File dest=new File(getBaseContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),"app-release.apk");
                   //  File dest=new File(getApplicationContext().getFilesDir(),"app-release.apk");
-                   // System.out.println(Environment.getRootDirectory().canWrite());
-                    System.out.println(dest.getAbsolutePath());
 
-                    FileOutputStream outputStream=new FileOutputStream(dest,false);
-                    stream= connection.getInputStream();
-                    byte[] buffer=new byte[1024];
-                    int length=0;
-                    while((length=stream.read(buffer))!=-1) {
-                        outputStream.write(buffer, 0, length);
-                    }
-                    outputStream.close();
-                    Uri fileuri;
-                    if(Build.VERSION.SDK_INT>Build.VERSION_CODES.M)
-                    {
-                        fileuri=getURI(getApplicationContext(),dest);
-                        System.out.println(fileuri.toString());
-                    }
-                    else
+                   //     System.out.println(dest.getAbsolutePath());
 
-                        fileuri=Uri.fromFile(dest);
-                    Intent intent=new Intent(Intent.ACTION_VIEW);
-                    intent.setDataAndType(fileuri,"application/vnd.android.package-archive");
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK );
-                    intent.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE,true);
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivity(intent);
+                        FileOutputStream outputStream = new FileOutputStream(dest, false);
+                        stream = connection.getInputStream();
+                        byte[] buffer = new byte[1024];
+                        int length = 0;
+                        while ((length = stream.read(buffer)) != -1) {
+                            outputStream.write(buffer, 0, length);
+                        }
+                        outputStream.close();
+
+                        checksuperuser();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), ""+Environment.getRootDirectory().canWrite(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    System.out.println(Environment.getRootDirectory().canWrite());
+
+                    if(Environment.getRootDirectory().canWrite()) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(context, "in if", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        installapk(dest);
+                    }
+                    else {
+
+                        Uri fileuri;
+                        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+                            fileuri = getURI(getApplicationContext(), dest);
+                            System.out.println(fileuri.toString());
+                        } else
+
+                            fileuri = Uri.fromFile(dest);
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setDataAndType(fileuri, "application/vnd.android.package-archive");
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true);
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        startActivity(intent);
+                    }
                 }
             } catch (IOException | JSONException | PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
             }
             return null;
+        }
+
+        public void installapk(File dest)
+        {
+            if(dest.exists()) {
+                String command;
+                command = "pm install -r " + dest.getAbsolutePath();
+                Process proc = null;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), "In installapk", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                try {
+                    proc = Runtime.getRuntime().exec(new String[]{"-c", command});
+
+                    proc.waitFor();
+
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public void checksuperuser()
+        {
+            try {
+                Process proc=Runtime.getRuntime().exec("su");
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         private Uri getURI(Context context,File dest) {
@@ -193,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void checkpermision()
     {
-        int permission= ActivityCompat.checkSelfPermission(this,Manifest.permission.READ_EXTERNAL_STORAGE);
+        int permission= ActivityCompat.checkSelfPermission(this,Manifest.permission.INSTALL_PACKAGES);
         if(permission!=PackageManager.PERMISSION_GRANTED)
         {
             ActivityCompat.requestPermissions(this,PERMISSIONS,1);
