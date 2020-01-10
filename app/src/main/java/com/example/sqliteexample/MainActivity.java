@@ -146,10 +146,10 @@ public class MainActivity extends AppCompatActivity {
                 {
                     url=new URL("https://github.com/DarshanAjudiya/sqliteexample/blob/master/app/release/app-release.apk?raw=true");
                     connection= (HttpURLConnection) url.openConnection();
-                    File dest=new File(Environment.getExternalStoragePublicDirectory( Environment.DIRECTORY_DOWNLOADS),"app-release.apk");
+                    //File dest=new File(Environment.getExternalStoragePublicDirectory( Environment.DIRECTORY_DOWNLOADS),"app-release.apk");
 
 
-                    //File dest=new File(getBaseContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),"app-release.apk");
+                    File dest=new File(getBaseContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),"app-release.apk");
                   //  File dest=new File(getApplicationContext().getFilesDir(),"app-release.apk");
                    // System.out.println(Environment.getRootDirectory().canWrite());
                     System.out.println(dest.getAbsolutePath());
